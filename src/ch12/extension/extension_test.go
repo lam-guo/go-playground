@@ -2,7 +2,9 @@ package extension
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
+	"time"
 )
 
 type Pet struct {
@@ -57,4 +59,9 @@ func TestPoly(t *testing.T) {
 	javaPro := new(JavaP)
 	writFP(goPro)
 	writFP(javaPro)
+	fmt.Println(runtime.NumCPU())
+	fmt.Println(runtime.GOMAXPROCS(runtime.NumCPU()))
+	fmt.Println(time.Now())
+	runtime.GC()
+	fmt.Println(time.Now())
 }
