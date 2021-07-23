@@ -2,6 +2,7 @@ package goroutine
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -22,4 +23,22 @@ func main() {
 	ch := make(chan string, 1)
 	send(ch, "Hello World!")
 	read(ch)
+}
+
+func TestSendAndReceive(t *testing.T) {
+	times := 5
+	ch := make(chan int)
+	done := make(chan bool)
+	go func() {
+		for i := 0; i < times; i++ {
+			ch <- rand.Intn(5)
+		}
+	}()
+	go func() {
+		for i := 0; i < times; i++ {
+			fmt.Println(<-ch)
+		}
+		done <- true
+	}()
+	<-done
 }
