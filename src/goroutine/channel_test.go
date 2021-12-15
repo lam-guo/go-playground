@@ -42,3 +42,27 @@ func TestSendAndReceive(t *testing.T) {
 	}()
 	<-done
 }
+
+func fanin(sources ...<-chan int) <-chan int {
+	c := make(chan int, len(sources))
+	for _, ch := range sources {
+		go func(in <-chan int) {
+			c <- <-in
+		}(ch)
+	}
+	return c
+}
+
+func TestFanIn(t *testing.T) {
+	ch1 := make(chan int, 1)
+	ch2 := make(chan int, 1)
+	ch3 := make(chan int, 1)
+
+	ch1 <- 1
+	ch2 <- 2
+	ch3 <- 3
+	c := fanin(ch1, ch2, ch3)
+	for i := range c {
+		t.Log(i)
+	}
+}
