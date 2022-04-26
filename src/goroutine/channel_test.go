@@ -69,7 +69,7 @@ func TestFanIn(t *testing.T) {
 	}
 }
 
-//  Done returns a channel that's closed when work done on behalf of this context should be canceled
+// Done returns a channel that's closed when work done on behalf of this context should be canceled
 // 1.Done可能返回nil如果ctx不能被canceld。Done may return nil if this context can never be canceled
 // 2.Done调用会返回同样的值。Successive calls to Done return the same value
 func TestCtxDoneChan(t *testing.T) {
@@ -77,7 +77,10 @@ func TestCtxDoneChan(t *testing.T) {
 
 	go func() {
 		time.Sleep(100 * time.Millisecond)
+		// 只有cancel执行了，将ctx的done这个channel 关闭了，<-ctx.Done()才不会阻塞，不然<-ctx.Done()会一直阻塞
+		fmt.Println("我还没cancel")
 		cancel()
+		fmt.Println("cancel了")
 	}()
 
 	go func() {
@@ -95,4 +98,18 @@ func TestCtxDoneChan(t *testing.T) {
 		fmt.Println("我来2了", ctx.Err())
 	}()
 	time.Sleep(1 * time.Second)
+}
+
+// 关闭了的channel可以读取还在channel里面的值；如果没有值了，取零值
+func TestReusableChan(t *testing.T) {
+	var closedchan = make(chan int, 5)
+	closedchan <- 1
+	closedchan <- 1
+	closedchan <- 1
+
+	close(closedchan)
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(<-closedchan) // 输出 1 1 1 0 0
+	}
 }
