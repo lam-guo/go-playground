@@ -113,3 +113,11 @@ func TestReusableChan(t *testing.T) {
 		fmt.Println(<-closedchan) // 输出 1 1 1 0 0
 	}
 }
+
+// nil channel会一直堵塞
+func TestNilChan(t *testing.T) {
+	var ch chan int
+	ch = nil
+	ch <- 1
+	fmt.Println(<-ch)
+}
