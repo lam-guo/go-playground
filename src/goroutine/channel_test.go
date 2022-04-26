@@ -1,9 +1,11 @@
 package goroutine
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestChannel(t *testing.T) {
@@ -65,4 +67,32 @@ func TestFanIn(t *testing.T) {
 	for i := range c {
 		t.Log(i)
 	}
+}
+
+//  Done returns a channel that's closed when work done on behalf of this context should be canceled
+// 1.Done可能返回nil如果ctx不能被canceld。Done may return nil if this context can never be canceled
+// 2.Done调用会返回同样的值。Successive calls to Done return the same value
+func TestCtxDoneChan(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+	}()
+
+	go func() {
+		// 为了测试ctx.Done()是否能调用多次
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("我来1了", ctx.Err())
+			}
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		fmt.Println("我来2了", ctx.Err())
+	}()
+	time.Sleep(1 * time.Second)
 }
