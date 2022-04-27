@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sync"
 	"testing"
 	"time"
 )
@@ -46,12 +47,19 @@ func TestSendAndReceive(t *testing.T) {
 }
 
 func fanin(sources ...<-chan int) <-chan int {
+	var wg sync.WaitGroup
 	c := make(chan int, len(sources))
+	wg.Add(len(sources))
 	for _, ch := range sources {
 		go func(in <-chan int) {
 			c <- <-in
+			wg.Done()
 		}(ch)
 	}
+	go func() {
+		wg.Wait()
+		close(c)
+	}()
 	return c
 }
 
