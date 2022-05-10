@@ -122,6 +122,30 @@ func TestReusableChan(t *testing.T) {
 	}
 }
 
+func TestReusableChanForRange(t *testing.T) {
+	var closedchan = make(chan int, 5)
+	closedchan <- 1
+	closedchan <- 1
+	closedchan <- 1
+
+	close(closedchan)
+
+	go func() {
+		for v := range closedchan {
+			fmt.Println(v) // 输出 1 1 1 0 0
+		}
+	}()
+
+	// for range 一个close的信道会没有输出
+	ch := make(chan struct{})
+	close(ch)
+	for v := range ch {
+		fmt.Println(v)
+	}
+	fmt.Println(<-ch)
+	fmt.Println("finish")
+}
+
 // nil channel会一直堵塞
 func TestNilChan(t *testing.T) {
 	var ch chan int
