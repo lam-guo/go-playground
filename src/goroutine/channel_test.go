@@ -3,6 +3,7 @@ package goroutine
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"testing"
@@ -152,4 +153,66 @@ func TestNilChan(t *testing.T) {
 	ch = nil
 	ch <- 1
 	fmt.Println(<-ch)
+}
+
+func TestClose(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
+	log.SetFlags(0)
+
+	// ...
+	const Max = 100000
+	const NumSenders = 4003
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(1)
+
+	// ...
+	dataCh := make(chan int, 10)
+	stopCh := make(chan struct{})
+	// stopCh is an additional signal channel.
+	// Its sender is the receiver of channel
+	// dataCh, and its receivers are the
+	// senders of channel dataCh.
+
+	// senders
+	for i := 0; i < NumSenders; i++ {
+		go func() {
+			for {
+				// Even if stopCh is closed, the first
+				// branch in the second select may be
+				// still not selected for some loops if
+				// the send to dataCh is also unblocked.
+				// But this is acceptable for this
+				// example, so the first select block
+				// above can be omitted.
+				select {
+				case <-stopCh:
+					return
+				case dataCh <- rand.Intn(Max):
+					log.Println("not")
+				}
+			}
+		}()
+	}
+
+	// the receiver
+	go func() {
+		defer wgReceivers.Done()
+
+		for value := range dataCh {
+			if value == Max-1 {
+				log.Print("close")
+				// The receiver of channel dataCh is
+				// also the sender of stopCh. It is
+				// safe to close the stop channel here.
+				close(stopCh)
+				return
+			}
+
+			log.Println(value)
+		}
+	}()
+
+	// ...
+	wgReceivers.Wait()
 }
