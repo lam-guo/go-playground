@@ -1,0 +1,18 @@
+TEXT command-line-arguments.New(SB) gofile../home/mine/go-playground/src/youlin/escape.go
+  escape.go:6           0x82b                   31c0                    XORL AX, AX
+  escape.go:6           0x82d                   c3                      RET
+
+TEXT command-line-arguments.NewInt(SB) gofile../home/mine/go-playground/src/youlin/escape.go
+  escape.go:10          0x82e                   493b6610                CMPQ 0x10(R14), SP
+  escape.go:10          0x832                   7629                    JBE 0x85d
+  escape.go:10          0x834                   4883ec18                SUBQ $0x18, SP
+  escape.go:10          0x838                   48896c2410              MOVQ BP, 0x10(SP)
+  escape.go:10          0x83d                   488d6c2410              LEAQ 0x10(SP), BP
+  escape.go:11          0x842                   488d0500000000          LEAQ 0(IP), AX                          [3:7]R_PCREL:type.int
+  escape.go:11          0x849                   0f1f440000              NOPL 0(AX)(AX*1)
+  escape.go:11          0x84e                   e800000000              CALL 0x853                              [1:5]R_CALL:runtime.newobject<1>
+  escape.go:12          0x853                   488b6c2410              MOVQ 0x10(SP), BP
+  escape.go:12          0x858                   4883c418                ADDQ $0x18, SP
+  escape.go:12          0x85c                   c3                      RET
+  escape.go:10          0x85d                   e800000000              CALL 0x862                              [1:5]R_CALL:runtime.morestack_noctxt
+  escape.go:10          0x862                   ebca                    JMP command-line-arguments.NewInt(SB)

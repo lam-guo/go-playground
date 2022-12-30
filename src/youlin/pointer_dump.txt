@@ -1,0 +1,3 @@
+TEXT command-line-arguments.convert(SB) gofile../home/mine/go-playground/src/youlin/pointer.go
+  pointer.go:8          0x767                   c70000000000            MOVL $0x0, 0(AX)
+  pointer.go:9          0x76d                   c3                      RET
