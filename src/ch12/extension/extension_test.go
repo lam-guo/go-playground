@@ -11,7 +11,7 @@ type Pet struct {
 }
 
 func (p *Pet) Speak() {
-	fmt.Print("...")
+	fmt.Println("...")
 }
 
 func (p *Pet) SpeakTo(host string) {
@@ -24,12 +24,14 @@ type Dog struct {
 }
 
 func (d *Dog) Speak() {
-	fmt.Print("wang!")
+	fmt.Println("wang!")
 }
 
 func TestDog(t *testing.T) {
 	dog := new(Dog)
 	dog.Speak()
+	dog.Pet.Speak()
+	dog.SpeakTo("duck")
 }
 
 type Code string
