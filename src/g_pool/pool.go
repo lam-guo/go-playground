@@ -6,11 +6,13 @@ import (
 
 type pool struct {
 	// slice存放可用worker
-	workers []worker
+	workers []*worker
 	// 池子大小
 	size int
-	lock sync.Mutex
-	once sync.Once
+	// 正在使用的worker数量
+	using int
+	lock  sync.Mutex
+	once  sync.Once
 }
 
 func NewPool(size int) *pool {
@@ -21,10 +23,42 @@ func NewPool(size int) *pool {
 	}
 }
 
-func (p *pool) GetWorker() worker {
+func (p *pool) GetWorker() *worker {
 	p.lock.Lock()
+	usableNum := len(p.workers) - 1
+	var needWaiting bool
+	if usableNum <= 0 {
+		needWaiting = p.using >= p.size
+		p.lock.Unlock()
+	} else {
+		workers := p.workers
+		w := workers[usableNum]
+		p.workers = workers[:usableNum]
+		p.lock.Unlock()
+		return w
+	}
 
-	return worker{}
+	if needWaiting {
+		for {
+			p.lock.Lock()
+			usableNum = len(p.workers) - 1
+			if usableNum <= 0 {
+				p.lock.Unlock()
+				continue
+			}
+			workers := p.workers
+			w := workers[usableNum]
+			p.workers = workers[:usableNum]
+			p.lock.Unlock()
+			return w
+		}
+	}
+	w := &worker{
+		task: make(chan f, 1),
+	}
+	w.run()
+	p.workers = append(p.workers, w)
+	return w
 }
 
 func (p *pool) SetJob(job f) {
