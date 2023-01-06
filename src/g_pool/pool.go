@@ -53,7 +53,9 @@ func (p *pool) GetWorker() *worker {
 		}
 	}
 	w := &worker{
-		task: make(chan f, 1),
+		pool:  p,
+		task:  make(chan f, 1),
+		clean: make(chan struct{}),
 	}
 	w.run()
 	p.workers = append(p.workers, w)
