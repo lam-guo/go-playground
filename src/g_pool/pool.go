@@ -12,7 +12,6 @@ type pool struct {
 	// 正在使用的worker数量
 	using int
 	lock  sync.Mutex
-	once  sync.Once
 }
 
 func NewPool(size int) *pool {
@@ -61,7 +60,8 @@ func (p *pool) GetWorker() *worker {
 	return w
 }
 
-func (p *pool) SetJob(job f) {
-	worker := p.GetWorker()
-	worker.task <- job
+func (p *pool) PutBackWorker(w *worker) {
+	p.lock.Lock()
+	p.workers = append(p.workers, w)
+	p.lock.Unlock()
 }
