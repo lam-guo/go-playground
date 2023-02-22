@@ -13,10 +13,21 @@ func TestUdpRead(t *testing.T) {
 		log.Panic(err)
 	}
 	// 不设置超时时间会一直堵塞
-	c.SetReadDeadline(time.Now().Add(10 * time.Second))
+	now := time.Now()
+	c.SetReadDeadline(now.Add(10 * time.Second))
+	log.Printf("time:%d\n", time.Now().Unix())
 	buf := make([]byte, 1024)
 	_, addr, err := c.ReadFrom(buf)
 	if err != nil {
+		log.Panic(err)
+	}
+	log.Println(addr)
+	// 超时时间可以重新设置
+	// 底层参考 runtime.poll_runtime_pollSetDeadline
+	c.SetReadDeadline(time.Now().Add(10 * time.Second))
+	_, addr, err = c.ReadFrom(buf)
+	if err != nil {
+		log.Printf("time:%d\n", time.Now().Unix())
 		log.Panic(err)
 	}
 	log.Println(addr)
